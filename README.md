@@ -1,1 +1,2 @@
-# Yii2Node-News
+Launch project:  
+docker-compose up -d --build

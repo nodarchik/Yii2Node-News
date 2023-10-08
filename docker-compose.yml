@@ -1,0 +1,45 @@
+version: '3'
+services:
+
+  # Yii2 Service
+  yii2-app:
+    build: ./yii2-app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./yii2-app:/var/www/html
+    environment:
+      - YII_ENV=dev
+
+  # Auth API Service
+  auth-api:
+    build: ./auth-api
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./auth-api/src:/usr/src/app/src
+    environment:
+      - NODE_ENV=development
+
+  # Storage API Service
+  storage-api:
+    build: ./storage-api
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./auth-api/src:/usr/src/app/src
+    depends_on:
+      - mongo
+    environment:
+      - NODE_ENV=development
+
+  # MongoDB Service
+  mongo:
+    image: "mongo"
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
