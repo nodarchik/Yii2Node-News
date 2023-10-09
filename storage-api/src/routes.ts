@@ -25,8 +25,10 @@ export const routeHandler = async (req: IncomingMessage, res: ServerResponse, db
         await registerUser(db, userData);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'User registered' }));
-    } else {
-        await tokenMiddleware(req, res, async () => {}).catch(err => console.error(err));
+        return;
+    }
+    try {
+        await tokenMiddleware(req, res, async () => {});
             if (url?.startsWith('/user')) {
                 const urlParts = url.split('/');
                 const userId = urlParts[2] || '';
@@ -76,6 +78,11 @@ export const routeHandler = async (req: IncomingMessage, res: ServerResponse, db
                         break;
                 }
             }
-        });
+            else {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'Not found' }));
+            }
+    } catch (err) {
+        console.error(err);
     }
 };
