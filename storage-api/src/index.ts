@@ -1,50 +1,35 @@
-import http from 'http';
-import { sign, verify, SignOptions, VerifyOptions } from 'jsonwebtoken';
-import { MongoClient } from 'mongodb';
+import express from 'express';
+import dotenv from 'dotenv';
+import { auth } from './middleware/auth';
+import userRoutes from './routes/userRoutes';
+import newsRoutes from './routes/newsRoutes';
+import { connectDB } from './config/db';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key'; // Should be from an environment variable
+dotenv.config();
 
-const generateToken = async (userId: string) => {
-    const payload = { userId };
-    const options: SignOptions = {
-        expiresIn: '1h' // expires in 1 hour
-    };
+const app = express();
 
-    return sign(payload, SECRET_KEY, options);
-};
+app.use(express.json());
 
-export const validateToken = async (token: string) => {
-    const options: VerifyOptions = {
-        algorithms: ['HS256']
-    };
+// Routes that do not require authentication
+app.use('/api/users', userRoutes);
 
+// Authentication middleware
+app.use(auth);
+
+// Routes that require authentication
+app.use('/api/news', newsRoutes);
+
+const start = async () => {
     try {
-        return verify(token, SECRET_KEY, options);
-    } catch (err) {
-        return null;
+        await connectDB();
+        app.listen(3000, () => console.log('Server is running on port 3000'));
+    } catch (error) {
+        console.error("Failed to start the server", error);
     }
 };
 
-const server = http.createServer(async (req, res) => {
-    if (req.url === '/login') {
-        // In a real scenario, you would authenticate the user first.
-        const token = await generateToken('someUserId');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ token }));
-    } else if (req.url === '/validate') {
-        const token = 'someTokenFromClient'; // Usually from req.headers.authorization
-        const user = await validateToken(token);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ valid: !!user }));
-    } else if (req.url === '/logout') {
-        // In a real scenario, you might invalidate the token.
-        res.end('Logged out');
-    } else {
-        res.end('Unknown route');
-    }
+start().catch(error => {
+    console.error("An error occurred while starting the application", error);
 });
 
-server.listen(3001, () => {
-    console.log('Server running on http://localhost:3001/');
-});
