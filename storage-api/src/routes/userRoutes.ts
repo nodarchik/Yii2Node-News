@@ -8,12 +8,22 @@ const router = Router();
 router.post('/register', async (req, res) => {
   const client = new MongoClient(process.env.MONGO_URI!);
   try {
+    const { username, password, confirmPassword } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).send('Username and password are required');
+    }
+    // Check that password and confirmPassword are the same
+    if (password !== confirmPassword) {
+      return res.status(400).send('Passwords do not match');
+    }
+
     await client.connect();
     const db = client.db();
-    const user = req.body;
-    // We should hash the password before storing it, but skipping for simplicity.
 
-    const insertResult = await db.collection('users').insertOne(user);
+    // Rest of your existing code...
+
+    const insertResult = await db.collection('users').insertOne({ username, password });
 
     if (!insertResult.acknowledged) {
       return res.status(500).send('Failed to register user');
@@ -22,12 +32,12 @@ router.post('/register', async (req, res) => {
     const newUserId = insertResult.insertedId;
 
     // Generate JWT Token
-    const token = jwt.sign({ _id: newUserId, username: user.username }, process.env.JWT_SECRET!, {
+    const token = jwt.sign({ _id: newUserId, username: username }, process.env.JWT_SECRET!, {
       expiresIn: '1h',
     });
 
     // Send token in HTTP header
-    res.header('Authorization', token).status(201).send({message: 'User registered successfully', token: token});
+    res.header('Authorization', token).status(201).send({ message: 'User registered successfully', token: token });
   } catch (err) {
     console.error(err);
     res.status(500).send('Failed to register user');
