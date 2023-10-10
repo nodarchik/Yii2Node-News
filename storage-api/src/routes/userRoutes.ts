@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
 
 const router = Router();
@@ -41,6 +41,58 @@ router.post('/register', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Failed to register user');
+  } finally {
+    await client.close();
+  }
+});
+router.get('/', async (req, res) => {
+  const client = new MongoClient(process.env.MONGO_URI!);
+  try {
+    await client.connect();
+    const db = client.db();
+    const users = await db.collection('users').find().toArray();
+    res.status(200).send(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to fetch users');
+  } finally {
+    await client.close();
+  }
+});
+
+// Define the /users/:id route (Update)
+router.put('/:id', async (req, res) => {
+  const client = new MongoClient(process.env.MONGO_URI!);
+  try {
+    const { id } = req.params;
+    const { username, password } = req.body;
+    await client.connect();
+    const db = client.db();
+    const updateResult = await db.collection('users').updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { username, password } }
+    );
+    res.status(200).send(updateResult);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update user');
+  } finally {
+    await client.close();
+  }
+});
+
+// Define the /users/:id route (Delete)
+router.delete('/:id', async (req, res) => {
+  const client = new MongoClient(process.env.MONGO_URI!);
+  try {
+    const { id } = req.params;
+    await client.connect();
+    const db = client.db();
+    const deleteResult = await db.collection('users').deleteOne({ _id: new ObjectId(id) });
+    res.status(200).send(deleteResult);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to delete user');
   } finally {
     await client.close();
   }
