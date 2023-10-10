@@ -15,7 +15,7 @@ services:
   auth-api:
     build: ./auth-api
     ports:
-      - "3001:3001"
+      - "3001:3000"
     volumes:
       - ./auth-api/src:/usr/src/app/src
     environment:
@@ -25,7 +25,7 @@ services:
   storage-api:
     build: ./storage-api
     ports:
-      - "3002:3002"
+      - "3002:3000"
     volumes:
       - ./auth-api/src:/usr/src/app/src
     depends_on:
