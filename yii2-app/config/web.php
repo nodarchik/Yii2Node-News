@@ -12,9 +12,12 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+        'apiService' => [
+            'class' => 'app\services\ApiService',
+        ],
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => 'X3cm7_mQ8d5eBYebsa8PdF1fQmHcLfXI',
+            'cookieValidationKey' => 'r45PkyuhkCfnm8SOFloLbs8IwWA-LuxY',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
