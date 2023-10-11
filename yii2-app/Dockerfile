@@ -1,26 +1,16 @@
-# Dockerfile for PHP
-FROM php:7.3-apache
+# Use the official Yii2 PHP image as the base image
+FROM yiisoftware/yii2-php:7.3-fpm
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y git unzip
+# Copy the Nginx configuration file into the image
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql
+# Copy your Yii2 application into the image
+COPY . /var/www/html
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
-
-# Change the document root if needed
-ENV APACHE_DOCUMENT_ROOT /var/www/html/web
-
-# Update apache configuration
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Copy the app's code into the image
-COPY . /var/www/html/
-
-# Set working directory
+# Set the working directory
 WORKDIR /var/www/html
+
+USER root
+# Update permissions
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 777 /var/www/html
