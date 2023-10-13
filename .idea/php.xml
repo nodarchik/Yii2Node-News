@@ -94,6 +94,9 @@
       <path value="$PROJECT_DIR$/yii2-app/vendor/yiisoft/yii2-debug" />
       <path value="$PROJECT_DIR$/yii2-app/vendor/yiisoft/yii2" />
       <path value="$PROJECT_DIR$/yii2-app/vendor/yiisoft/yii2-composer" />
+      <path value="$PROJECT_DIR$/yii2-app/vendor/psr/http-client" />
+      <path value="$PROJECT_DIR$/yii2-app/vendor/guzzlehttp/guzzle" />
+      <path value="$PROJECT_DIR$/yii2-app/vendor/guzzlehttp/promises" />
     </include_path>
   </component>
   <component name="PhpStanOptionsConfiguration">
