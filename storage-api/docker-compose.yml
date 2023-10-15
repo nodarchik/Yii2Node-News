@@ -1,7 +1,7 @@
 version: '3'
-
 services:
   yii2-app:
+    user: "www-data"
     build: .
     container_name: yii2-app
     expose:

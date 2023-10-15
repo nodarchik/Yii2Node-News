@@ -1,15 +1,14 @@
 version: '3'
-
 services:
-  yii2-app:
+  auth-api:
+    container_name: auth-api
     build: .
-    container_name: yii2-app
-    expose:
-      - "9000"
+    ports:
+      - "3001:3000"
     volumes:
-      - .:/var/www/html
+      - ./src:/usr/src/app/src
     environment:
-      - YII_ENV=dev
+      - NODE_ENV=development
     networks:
       - news-network
 

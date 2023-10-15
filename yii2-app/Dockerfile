@@ -1,9 +1,6 @@
 # Use the official Yii2 PHP image as the base image
 FROM yiisoftware/yii2-php:7.3-fpm
 
-# Copy the Nginx configuration file into the image
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
 # Copy your Yii2 application into the image
 COPY . /var/www/html
 
