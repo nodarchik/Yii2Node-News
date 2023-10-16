@@ -1,18 +1,31 @@
 version: '3'
 services:
-  yii2-app:
-    user: "www-data"
+  storage-api:
+    container_name: storage-api
     build: .
-    container_name: yii2-app
-    expose:
-      - "9000"
+    ports:
+      - "3002:3000"
     volumes:
-      - .:/var/www/html
+      - ./src:/usr/src/app/src
+    depends_on:
+      - mongo
     environment:
-      - YII_ENV=dev
+      - NODE_ENV=development
     networks:
       - news-network
 
+  mongo:
+    container_name: mongo
+    image: "mongo"
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - news-network
+
+volumes:
+  mongodb_data:
+
 networks:
   news-network:
-    external: true

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from '../config/config';
-import { AuthServiceInterface } from '../interfaces/AuthServiceInterface';
+import { AuthServiceInterface } from '../interfaces/authServiceInterface';
 import { generateToken, verifyToken } from '../utils/jwtUtils';
 
 

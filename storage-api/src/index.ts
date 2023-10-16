@@ -1,35 +1,23 @@
 import express from 'express';
-import dotenv from 'dotenv';
-import { auth } from './middleware/auth';
-import userRoutes from './routes/userRoutes';
-import newsRoutes from './routes/newsRoutes';
 import { connectDB } from './config/db';
-
-dotenv.config();
+import userRoutes from './routes/v1/userRoutes';
+import { errorHandler } from './middleware/errorHandler';
+import newsRoutes from './routes/v1/newsRoutes';
 
 const app = express();
 
 app.use(express.json());
 
-// Routes that do not require authentication
-app.use('/api/users', userRoutes);
+// Routes
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/news', newsRoutes);
 
-// Authentication middleware
-app.use(auth);
-
-// Routes that require authentication
-app.use('/api/news', newsRoutes);
+// Global error handler
+app.use(errorHandler);
 
 const start = async () => {
-    try {
-        await connectDB();
-        app.listen(3000, () => console.log('Server is running on port 3000'));
-    } catch (error) {
-        console.error("Failed to start the server", error);
-    }
+    await connectDB();
+    app.listen(3000, () => console.log('Server is running on port 3000'));
 };
 
-start().catch(error => {
-    console.error("An error occurred while starting the application", error);
-});
-
+start();

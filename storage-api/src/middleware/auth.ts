@@ -1,20 +1,25 @@
 import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
+import { config } from '../config/config';
+import { StatusCodes } from 'http-status-codes';
+import { IUser } from '../models/User';
 
-export const auth = (req: any, res: any, next: any) => {
-    const token = req.header('Authorization');
+interface IReqUser extends Request {
+    user?: any;
+}
 
-    if (req.path === '/api/register' || req.path === '/api/users/register') {
-        return next();
-    }
+export const auth = async (req: IReqUser, res: Response, next: NextFunction) => {
+    const token = req.header('Authorization')?.split(' ')[1];  // Expecting 'Bearer <token>'
 
     if (!token) {
-        return res.status(401).send('Access denied. No token provided.');
+        return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Access denied. No token provided.' });
     }
 
     try {
-        req.user = jwt.verify(token, process.env.JWT_SECRET!);
+        const decodedToken = jwt.verify(token, config.jwtSecret) as IUser;
+        req.user = decodedToken;
         next();
     } catch (ex) {
-        res.status(400).send('Invalid token.');
+        res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid token.' });
     }
 };

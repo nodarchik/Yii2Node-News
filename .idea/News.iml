@@ -86,6 +86,7 @@
       <excludeFolder url="file://$MODULE_DIR$/yii2-app/vendor/yiisoft/yii2-faker" />
       <excludeFolder url="file://$MODULE_DIR$/yii2-app/vendor/yiisoft/yii2-gii" />
       <excludeFolder url="file://$MODULE_DIR$/yii2-app/vendor/yiisoft/yii2-swiftmailer" />
+      <excludeFolder url="file://$MODULE_DIR$/yii2-app/vendor/yiisoft/yii2-httpclient" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,5 +1,9 @@
 <?php
 
+use app\clients\AuthApiClient;
+use app\clients\UserApiClient;
+use app\clients\NewsApiClient;
+
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
@@ -8,20 +12,21 @@ $config = [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'defaultRoute' => 'site/index',
-    'aliases' => [
-        '@bower' => '@vendor/bower-asset',
-        '@npm'   => '@vendor/npm-asset',
-    ],
     'components' => [
-        'apiService' => [
-            'class' => 'app\services\ApiService',
+        'authApiClient' => [
+            'class' => AuthApiClient::class,
+            'baseUrl' => 'http://localhost:3001/api',
+        ],
+        'userApiClient' => [
+            'class' => UserApiClient::class,
+            'baseUrl' => 'http://localhost:3002/api',
+        ],
+        'newsApiClient' => [
+            'class' => NewsApiClient::class,
+            'baseUrl' => 'http://localhost:3002/api',
         ],
         'request' => [
-            // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => 'r45PkyuhkCfnm8SOFloLbs8IwWA-LuxY',
-        ],
-        'cache' => [
-            'class' => 'yii\caching\FileCache',
+            'cookieValidationKey' => 'your-cookie-validation-key',
         ],
         'user' => [
             'identityClass' => 'app\models\User',
@@ -32,9 +37,6 @@ $config = [
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
-            // send all mails to a file by default. You have to set
-            // 'useFileTransport' to false and configure transport
-            // for the mailer to send real emails.
             'useFileTransport' => true,
         ],
         'log' => [
@@ -47,31 +49,24 @@ $config = [
             ],
         ],
         'db' => $db,
-
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'rules' => [
-            ],
+            'rules' => [],
         ],
     ],
     'params' => $params,
 ];
 
 if (YII_ENV_DEV) {
-    // configuration adjustments for 'dev' environment
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
-        // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
     ];
 
     $config['bootstrap'][] = 'gii';
     $config['modules']['gii'] = [
         'class' => 'yii\gii\Module',
-        // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
     ];
 }
 

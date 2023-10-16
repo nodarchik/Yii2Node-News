@@ -7,8 +7,8 @@ WORKDIR /usr/src
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies and nodemon
+RUN npm install && npm install -g nodemon
 
 # Copy all source files
 COPY . .
@@ -20,4 +20,4 @@ RUN npm run build
 EXPOSE 3002
 
 # Command to run the application
-CMD ["npm", "start"]
+CMD ["nodemon", "./dist/index.js"]

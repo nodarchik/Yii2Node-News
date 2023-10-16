@@ -1,25 +1,30 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { axiosInstance } from '../utils/axiosInstance';
+import { AuthServiceInterface } from '../interfaces/authServiceInterface';
+import { StatusCodes } from 'http-status-codes';
 
-export const login = async (req: Request, res: Response) => {
-    try {
-        // Assuming users authenticate against the Storage API
-        const { data } = await axiosInstance.post('/users/login', req.body);
-        const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET!, {
-            expiresIn: '1h',
-        });
-        res.header('Authorization', token).status(200).send({ token });
-    } catch (error) {
-        res.status(500).send('Failed to login');
-    }
-};
+export class AuthController {
+    static login = async (authService: AuthServiceInterface, req: Request, res: Response) => {
+        try {
+            const token = await authService.login(req.body.email, req.body.password);
+            res.header('Authorization', token).status(StatusCodes.OK).send({ token });
+        } catch (error: unknown) {  // Specify error type as unknown
+            if (error instanceof Error) {  // Type guard to narrow down the type
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error.message);
+            } else {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).send('An unknown error occurred');
+            }
+        }
+    };
 
-export const logout = (req: Request, res: Response) => {
-    // Implement logout logic, like invalidating the token if necessary
-    res.status(200).send('Logged out successfully');
-};
+    static logout = (authService: AuthServiceInterface, req: Request, res: Response) => {
+        const token = req.header('Authorization')!;
+        authService.logout(token);
+        res.status(StatusCodes.OK).send('Logged out successfully');
+    };
 
-export const validateToken = (req: Request, res: Response) => {
-    res.status(200).send({ valid: true });
-};
+    static validateToken = (authService: AuthServiceInterface, req: Request, res: Response) => {
+        const token = req.header('Authorization')!;
+        const isValid = authService.validateToken(token);
+        res.status(StatusCodes.OK).send({ valid: isValid });
+    };
+}

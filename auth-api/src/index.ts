@@ -1,8 +1,5 @@
 import express from 'express';
-import { config } from 'dotenv';
 import authRoutes from './routes/authRoutes';
-
-config();
 
 const app = express();
 app.use(express.json());

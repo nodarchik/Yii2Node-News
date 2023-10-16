@@ -2,97 +2,92 @@
 
 namespace app\controllers;
 
-use app\services\ApiService;
+use app\services\NewsService;
+use Exception;
 use Yii;
+use yii\base\Module;
+use yii\filters\AccessControl;
 use yii\web\Controller;
-use app\models\NewsForm;
+use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 class NewsController extends Controller
 {
-    private $apiService;
+    private $_newsService;
 
-    public function __construct($id, $module, ApiService $apiService, $config = [])
+    public function __construct($id, Module $module, NewsService $newsService, $config = [])
     {
-        $this->apiService = $apiService;
+        $this->_newsService = $newsService;
         parent::__construct($id, $module, $config);
     }
 
-    public function actionIndex()
+    public function behaviors(): array
     {
-        $newsList = $this->apiService->fetchNews();
-        return $this->render('index', [
-            'newsList' => $newsList,
-        ]);
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['create', 'update', 'delete'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
+        ];
     }
 
+    /**
+     * @throws Exception
+     */
+    public function actionIndex(): string
+    {
+        $token = Yii::$app->session->get('user.token');
+        $news = $this->_newsService->getAllNews($token);
+        return $this->render('index', ['news' => $news]);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function actionCreate()
     {
-        $model = new NewsForm();
-
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $response = $this->apiService->createNews($model->title, $model->content);
-            if ($response['success']) {  // Assuming 'success' is a field in the response
-                Yii::$app->session->setFlash('success', 'News created successfully.');
-                return $this->redirect(['index']);
-            } else {
-                Yii::$app->session->setFlash('error', 'Failed to create news.');
-            }
-        }
-
-        return $this->render('create', [
-            'model' => $model,
-        ]);
-    }
-
-    public function actionUpdate($id)
-    {
-        $model = new NewsForm();
-
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $response = $this->apiService->updateNews($id, $model->title, $model->content);
-            if ($response['success']) {
-                Yii::$app->session->setFlash('success', 'News updated successfully.');
-                return $this->redirect(['index']);
-            } else {
-                Yii::$app->session->setFlash('error', 'Failed to update news.');
-            }
-        } else {
-            $newsData = $this->apiService->fetchNewsItem($id);
-            if ($newsData) {
-                $model->title = $newsData['title'];
-                $model->content = $newsData['content'];
-            } else {
-                Yii::$app->session->setFlash('error', 'News not found.');
-                return $this->redirect(['index']);
-            }
-        }
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
-    }
-
-    public function actionView($id)
-    {
-        $newsData = $this->apiService->fetchNewsItem($id);
-        if ($newsData) {
-            return $this->render('view', [
-                'newsData' => $newsData,
-            ]);
-        } else {
-            Yii::$app->session->setFlash('error', 'News not found.');
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $token = Yii::$app->session->get('user.token');
+            $data = $request->post();
+            $this->_newsService->createNews($data, $token);
             return $this->redirect(['index']);
         }
+
+        return $this->render('create');
     }
 
-    public function actionDelete($id)
+    /**
+     * @throws Exception
+     */
+    public function actionUpdate($id): string
     {
-        $response = $this->apiService->deleteNews($id);
-        if ($response['success']) {
-            Yii::$app->session->setFlash('success', 'News deleted successfully.');
-        } else {
-            Yii::$app->session->setFlash('error', 'Failed to delete news.');
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $token = Yii::$app->session->get('user.token');
+            $data = $request->post();
+            $this->_newsService->updateNews($id, $data, $token);
+            return $this->redirect(['index']);
         }
+
+        $token = Yii::$app->session->get('user.token');
+        $news = $this->_newsService->getNewsById($id, $token);
+        return $this->render('update', ['news' => $news]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function actionDelete($id): Response
+    {
+        $token = Yii::$app->session->get('user.token');
+        $this->_newsService->deleteNews($id, $token);
         return $this->redirect(['index']);
     }
 }
