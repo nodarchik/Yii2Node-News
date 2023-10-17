@@ -12,18 +12,33 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-    'defaultRoute' => 'user/login',
+    'defaultRoute' => 'user/index',
     'components' => [
         'authApiClient' => [
             'class' => AuthApiClient::class,
+            'client' => function() {
+                return new GuzzleHttp\Client([
+                    'timeout'  => 2.0,
+                ]);
+            },
             'baseUrl' => 'http://localhost:3001/api',
         ],
         'userApiClient' => [
             'class' => UserApiClient::class,
+            'client' => function() {
+                return new GuzzleHttp\Client([
+                    'timeout'  => 2.0,
+                ]);
+            },
             'baseUrl' => 'http://localhost:3002/api',
         ],
         'newsApiClient' => [
             'class' => NewsApiClient::class,
+            'client' => function() {
+                return new GuzzleHttp\Client([
+                    'timeout'  => 2.0,
+                ]);
+            },
             'baseUrl' => 'http://localhost:3002/api',
         ],
         'request' => [
