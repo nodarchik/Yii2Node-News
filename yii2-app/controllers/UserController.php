@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
+use app\clients\AuthApiClient;
 use app\models\User;
 use app\services\UserService;
+use Exception;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -16,10 +19,12 @@ use yii\web\Response;
 class UserController extends Controller
 {
     private $userService;
+    private $authApiClient;
 
-    public function __construct($id, $module, UserService $userService, $config = [])
+    public function __construct($id, $module, UserService $userService,AuthApiClient $authApiClient, $config = [])
     {
         $this->userService = $userService;
+        $this->authApiClient = $authApiClient;
         parent::__construct($id, $module, $config);
     }
 
@@ -86,6 +91,42 @@ class UserController extends Controller
     }
 
     /**
+     * Logs in a user.
+     *
+     * @return string|Response
+     */
+    public function actionLogin()
+    {
+        if (!Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        $model = new User();
+
+        if ($model->load(Yii::$app->request->post())) {
+            try {
+                $response = $this->authApiClient->login($model->username, $model->password);
+                if (isset($response['token'])) {
+                    Yii::$app->session->set('user.token', $response['token']);
+                    return $this->goBack();
+                } else {
+                    Yii::$app->session->setFlash('error', 'Login failed.');
+                }
+            } catch (Exception $e) {
+                Yii::error($e->getMessage(), __METHOD__);
+                Yii::$app->session->setFlash('error', 'An error occurred while trying to log in.');
+            } catch (GuzzleException $e) {
+                Yii::error($e->getMessage(), __METHOD__);
+                Yii::$app->session->setFlash('error', 'An error occurred while trying to communicate with the authentication service.');
+            }
+        }
+
+        return $this->render('login', [
+            'model' => $model,
+        ]);
+    }
+
+    /**
      * Creates a new user.
      *
      * @return string|Response
@@ -104,16 +145,18 @@ class UserController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             try {
                 $user = $this->userService->registerUser($model->attributes);
+                return $this->redirect(['view', 'id' => $user->id]);
             } catch (GuzzleException|InvalidConfigException $e) {
+                Yii::error($e->getMessage(), __METHOD__);
+                Yii::$app->session->setFlash('error', 'An error occurred while trying to register the user.');
             }
-
-            return $this->redirect(['view', 'id' => $user->id]);
         }
 
         return $this->render('create', [
             'model' => $model,
         ]);
     }
+
 
     /**
      * Updates an existing user.
@@ -135,9 +178,10 @@ class UserController extends Controller
 
         try {
             $user = $this->userService->getUserById($id, $token);
-        } catch (GuzzleException|InvalidConfigException $e) {
+        } catch (InvalidConfigException $e) {
             Yii::error($e->getMessage(), __METHOD__);
-            // Handle exception
+            Yii::$app->session->setFlash('error', 'An error occurred while trying to retrieve the user details.');
+            return $this->redirect(['index']);
         }
 
         if ($user === null) {

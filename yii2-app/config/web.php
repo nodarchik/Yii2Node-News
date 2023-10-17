@@ -3,6 +3,7 @@
 use app\clients\AuthApiClient;
 use app\clients\UserApiClient;
 use app\clients\NewsApiClient;
+use app\services\UserService;
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
@@ -53,6 +54,14 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [],
+        ],
+        'container' => [
+            'definitions' => [
+                UserService::class => function ($container) {
+                    $userApiClient = $container->get(UserApiClient::class);
+                    return new UserService($userApiClient);
+                },
+            ],
         ],
     ],
     'params' => $params,

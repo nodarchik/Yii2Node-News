@@ -1,36 +1,29 @@
 <?php
-/* @var $this yii\web\View */
-/* @var $users array */
-
 use yii\helpers\Html;
+use yii\grid\GridView;
 
-$this->title = 'User List';
+/* @var $this yii\web\View */
+/* @var $users app\models\User[] */
+
+$this->title = 'Users';
 ?>
 <div class="user-index">
+
     <h1><?= Html::encode($this->title) ?></h1>
-    <table class="table table-striped table-bordered">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($users as $user): ?>
-            <tr>
-                <td><?= Html::encode($user['id']) ?></td>
-                <td><?= Html::encode($user['username']) ?></td>
-                <td>
-                    <?= Html::a('Update', ['update', 'id' => $user['id']], ['class' => 'btn btn-primary']) ?>
-                    <?= Html::a('Delete', ['delete', 'id' => $user['id']], [
-                        'class' => 'btn btn-danger',
-                        'data-confirm' => 'Are you sure you want to delete this user?',
-                        'data-method' => 'post',
-                    ]) ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
+
+    <p>
+        <?= Html::a('Create User', ['create'], ['class' => 'btn btn-success']) ?>
+    </p>
+
+    <?= GridView::widget([
+        'dataProvider' => $users,
+        'columns' => [
+            'id',
+            'username',
+            [
+                'class' => 'yii\grid\ActionColumn',
+            ],
+        ],
+    ]); ?>
+
 </div>
