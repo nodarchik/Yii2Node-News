@@ -2,13 +2,15 @@
 
 namespace app\controllers;
 
+use app\models\News;
 use app\services\NewsService;
-use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Yii;
 use yii\base\Module;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class NewsController extends Controller
@@ -38,56 +40,97 @@ class NewsController extends Controller
     }
 
     /**
-     * @throws Exception
+     * @throws NotFoundHttpException
      */
     public function actionIndex(): string
     {
         $token = Yii::$app->session->get('user.token');
-        $news = $this->_newsService->getAllNews($token);
+        if (!$token) {
+            throw new NotFoundHttpException('Unauthorized access.');
+        }
+        try {
+            $news = $this->_newsService->getAllNews($token);
+        } catch (\Exception $e) {
+            throw new NotFoundHttpException($e->getMessage());
+        } catch (GuzzleException $e) {
+        }
+
         return $this->render('index', ['news' => $news]);
     }
 
     /**
-     * @throws Exception
+     * @throws BadRequestHttpException
      */
     public function actionCreate()
     {
-        $request = Yii::$app->request;
-        if ($request->isPost) {
+        $model = new News();
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             $token = Yii::$app->session->get('user.token');
-            $data = $request->post();
-            $this->_newsService->createNews($data, $token);
+            if (!$token) {
+                throw new BadRequestHttpException('Unauthorized access.');
+            }
+            try {
+                $this->_newsService->createNews($model->attributes, $token);
+            } catch (\Exception $e) {
+                throw new BadRequestHttpException($e->getMessage());
+            } catch (GuzzleException $e) {
+            }
+
             return $this->redirect(['index']);
         }
 
-        return $this->render('create');
+        return $this->render('create', ['model' => $model]);
     }
 
     /**
-     * @throws Exception
+     * @throws NotFoundHttpException|BadRequestHttpException
      */
     public function actionUpdate($id): string
     {
-        $request = Yii::$app->request;
-        if ($request->isPost) {
-            $token = Yii::$app->session->get('user.token');
-            $data = $request->post();
-            $this->_newsService->updateNews($id, $data, $token);
+        $token = Yii::$app->session->get('user.token');
+        if (!$token) {
+            throw new NotFoundHttpException('Unauthorized access.');
+        }
+        try {
+            $news = $this->_newsService->getNewsById($id, $token);
+        } catch (\Exception $e) {
+            throw new NotFoundHttpException($e->getMessage());
+        } catch (GuzzleException $e) {
+        }
+
+        $model = new News();
+        $model->attributes = $news->attributes;
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            try {
+                $this->_newsService->updateNews($id, $model->attributes, $token);
+            } catch (\Exception $e) {
+                throw new BadRequestHttpException($e->getMessage());
+            } catch (GuzzleException $e) {
+            }
+
             return $this->redirect(['index']);
         }
 
-        $token = Yii::$app->session->get('user.token');
-        $news = $this->_newsService->getNewsById($id, $token);
-        return $this->render('update', ['news' => $news]);
+        return $this->render('update', ['model' => $model]);
     }
 
     /**
-     * @throws Exception
+     * @throws NotFoundHttpException
      */
     public function actionDelete($id): Response
     {
         $token = Yii::$app->session->get('user.token');
-        $this->_newsService->deleteNews($id, $token);
+        if (!$token) {
+            throw new NotFoundHttpException('Unauthorized access.');
+        }
+        try {
+            $this->_newsService->deleteNews($id, $token);
+        } catch (\Exception $e) {
+            throw new NotFoundHttpException($e->getMessage());
+        } catch (GuzzleException $e) {
+        }
+
         return $this->redirect(['index']);
     }
 }

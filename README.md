@@ -1,6 +1,6 @@
-# Your Project Title
+# Yii2Node
 
-Your project is a microservices-based application that manages user and news data, and handles user authentication. The project comprises of multiple microservices.
+Project is a microservices-based application that manages user and news data, and handles user authentication. The project comprises multiple microservices.
 
 
 ## Technologies Used:
