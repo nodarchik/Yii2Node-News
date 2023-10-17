@@ -12,7 +12,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-    'defaultRoute' => 'site/index',
+    'defaultRoute' => 'user/login',
     'components' => [
         'authApiClient' => [
             'class' => AuthApiClient::class,
@@ -54,14 +54,6 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [],
-        ],
-        'container' => [
-            'definitions' => [
-                UserService::class => function ($container) {
-                    $userApiClient = $container->get(UserApiClient::class);
-                    return new UserService($userApiClient);
-                },
-            ],
         ],
     ],
     'params' => $params,
