@@ -28,6 +28,7 @@ Project is a microservices-based application that manages user and news data, an
 
 - `storage-api/` - Contains the Storage API microservice code.
 - `auth-api/` - Contains the Auth API microservice code.
+- 'yii2node/' - Contains the Yii2 application code.
 
 ## Testing:
 

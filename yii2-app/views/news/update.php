@@ -1,15 +1,27 @@
 <?php
-/* @var $model app\models\NewsForm */
-
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
+/* @var $this yii\web\View */
+/* @var $model app\models\News */
+
+$this->title = 'Update News: ' . $model->id;
 ?>
-<h1>Update News</h1>
-<?php $form = ActiveForm::begin(); ?>
-<?= $form->field($model, 'title') ?>
-<?= $form->field($model, 'content')->textarea() ?>
-<div class="form-group">
-    <?= Html::submitButton('Save', ['class' => 'btn btn-primary']) ?>
+<div class="news-update">
+
+    <h1><?= Html::encode($this->title) ?></h1>
+
+    <?php $form = ActiveForm::begin(); ?>
+
+    <?= $this->render('_form', [
+        'model' => $model,
+        'form' => $form,
+    ]) ?>
+
+    <div class="form-group">
+        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+    </div>
+
+    <?php ActiveForm::end(); ?>
+
 </div>
-<?php ActiveForm::end(); ?>

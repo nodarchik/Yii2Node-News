@@ -50,9 +50,12 @@ class NewsController extends Controller
         }
         try {
             $news = $this->_newsService->getAllNews($token);
-        } catch (\Exception $e) {
-            throw new NotFoundHttpException($e->getMessage());
         } catch (GuzzleException $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            throw new NotFoundHttpException('Failed to retrieve news.');
+        } catch (\Exception $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            throw new NotFoundHttpException($e->getMessage());
         }
 
         return $this->render('index', ['news' => $news]);
@@ -71,9 +74,12 @@ class NewsController extends Controller
             }
             try {
                 $this->_newsService->createNews($model->attributes, $token);
-            } catch (\Exception $e) {
-                throw new BadRequestHttpException($e->getMessage());
             } catch (GuzzleException $e) {
+                Yii::error($e->getMessage(), __METHOD__);
+                throw new BadRequestHttpException('Failed to create news.');
+            } catch (\Exception $e) {
+                Yii::error($e->getMessage(), __METHOD__);
+                throw new BadRequestHttpException($e->getMessage());
             }
 
             return $this->redirect(['index']);
@@ -83,19 +89,23 @@ class NewsController extends Controller
     }
 
     /**
-     * @throws NotFoundHttpException|BadRequestHttpException
+     * @throws NotFoundHttpException
      */
-    public function actionUpdate($id): string
+    public function actionUpdate($id)
     {
         $token = Yii::$app->session->get('user.token');
         if (!$token) {
             throw new NotFoundHttpException('Unauthorized access.');
         }
+
         try {
             $news = $this->_newsService->getNewsById($id, $token);
-        } catch (\Exception $e) {
-            throw new NotFoundHttpException($e->getMessage());
         } catch (GuzzleException $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            throw new NotFoundHttpException('Failed to retrieve news.');
+        } catch (\Exception $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            throw new NotFoundHttpException($e->getMessage());
         }
 
         $model = new News();
@@ -104,16 +114,19 @@ class NewsController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             try {
                 $this->_newsService->updateNews($id, $model->attributes, $token);
-            } catch (\Exception $e) {
-                throw new BadRequestHttpException($e->getMessage());
+                return $this->redirect(['index']);
             } catch (GuzzleException $e) {
+                Yii::error($e->getMessage(), __METHOD__);
+                Yii::$app->session->setFlash('error', 'Failed to update news.');
+            } catch (\Exception $e) {
+                Yii::error($e->getMessage(), __METHOD__);
+                Yii::$app->session->setFlash('error', $e->getMessage());
             }
-
-            return $this->redirect(['index']);
         }
 
         return $this->render('update', ['model' => $model]);
     }
+
 
     /**
      * @throws NotFoundHttpException
@@ -126,9 +139,12 @@ class NewsController extends Controller
         }
         try {
             $this->_newsService->deleteNews($id, $token);
-        } catch (\Exception $e) {
-            throw new NotFoundHttpException($e->getMessage());
         } catch (GuzzleException $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            throw new NotFoundHttpException('Failed to delete news.');
+        } catch (\Exception $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            throw new NotFoundHttpException($e->getMessage());
         }
 
         return $this->redirect(['index']);
